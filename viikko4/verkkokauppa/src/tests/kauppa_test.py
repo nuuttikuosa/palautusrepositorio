@@ -11,7 +11,7 @@ class TestKauppa(unittest.TestCase):
         viitegeneraattori_mock = Mock()
 
         # palautetaan aina arvo 42
-        viitegeneraattori_mock.uusi.return_value = 42
+        viitegeneraattori_mock.uusi.side_effect = [42, 43, 44]
 
         varasto_mock = Mock()
 
@@ -98,3 +98,42 @@ class TestKauppa(unittest.TestCase):
         
             
         self.pankki_mock.tilisiirto.assert_called_with("tero", 42, "54321", "33333-44455", 10)
+    
+    def test_ostoksen_paaytyttya_pankin_metodia_tilisiirto_kutsutaan_oikeilla_attribuuteilla_kaksi_samaa_ostosta_ostoskori_nollataan(self):
+
+        self.kauppa.aloita_asiointi()
+        self.kauppa.lisaa_koriin(3)
+        self.kauppa.aloita_asiointi()
+        self.kauppa.lisaa_koriin(3)
+        self.kauppa.tilimaksu("tero", "54321")
+        
+            
+        self.pankki_mock.tilisiirto.assert_called_with("tero", 42, "54321", "33333-44455", 10)
+
+    def test_ostoksen_paaytyttya_pankin_metodia_tilisiirto_kutsutaan_oikeilla_viitenumerolla(self):
+        self.kauppa.aloita_asiointi()
+        self.kauppa.lisaa_koriin(3)
+        self.kauppa.tilimaksu("tero", "54321")
+        self.pankki_mock.tilisiirto.assert_called_with("tero", 42, "54321", ANY, ANY)
+
+        self.kauppa.aloita_asiointi()
+        self.kauppa.lisaa_koriin(3)
+        self.kauppa.tilimaksu("tero", "54321")
+        self.pankki_mock.tilisiirto.assert_called_with("tero", 43, "54321", ANY, ANY)
+
+        self.kauppa.aloita_asiointi()
+        self.kauppa.lisaa_koriin(1)
+        self.kauppa.tilimaksu("pasi", "6579")
+        self.pankki_mock.tilisiirto.assert_called_with("pasi", 44, "6579", ANY, ANY)
+
+
+    def test_poista_tuote_ostoskorista(self):
+        self.kauppa.aloita_asiointi()
+        self.kauppa.lisaa_koriin(1)
+        self.kauppa.lisaa_koriin(2)
+        self.kauppa.poista_korista(2)
+        self.kauppa.tilimaksu("pasi", "6579")
+        self.pankki_mock.tilisiirto.assert_called_with("pasi", 42, "6579", ANY, 5)
+
+        ## Kurssimateriaalissa sanottiin, että jos bugeja löytyy, korjaa ne. ostoskorista voi poistaa tuotteita vaikka niitä ei ole sillä ja samalla palautuvat varastoon
+        ## tämä on varmaan bugi, mutta en tohtinut lisätä metodia jolla voisi tarkistaa ostoskorin sisällön. 
