@@ -127,7 +127,7 @@ class TestKauppa(unittest.TestCase):
         self.pankki_mock.tilisiirto.assert_called_with("pasi", 44, "6579", ANY, ANY)
 
 
-    def test_poista_tuote_ostoskorista(self):
+    def test_poista_tuote_ostoskorista_eri_tuotteet(self):
         self.kauppa.aloita_asiointi()
         self.kauppa.lisaa_koriin(1)
         self.kauppa.lisaa_koriin(2)
@@ -135,5 +135,12 @@ class TestKauppa(unittest.TestCase):
         self.kauppa.tilimaksu("pasi", "6579")
         self.pankki_mock.tilisiirto.assert_called_with("pasi", 42, "6579", ANY, 5)
 
-        ## Kurssimateriaalissa sanottiin, että jos bugeja löytyy, korjaa ne. ostoskorista voi poistaa tuotteita vaikka niitä ei ole sillä ja samalla palautuvat varastoon
-        ## tämä on varmaan bugi, mutta en tohtinut lisätä metodia jolla voisi tarkistaa ostoskorin sisällön. 
+    def test_poista_tuote_ostoskorista_eri_tuotteet(self):
+        self.kauppa.aloita_asiointi()
+        self.kauppa.lisaa_koriin(1)
+        self.kauppa.lisaa_koriin(1)
+        self.kauppa.poista_korista(1)
+        self.kauppa.tilimaksu("pasi", "6579")
+        self.pankki_mock.tilisiirto.assert_called_with("pasi", 42, "6579", ANY, 5)
+
+
