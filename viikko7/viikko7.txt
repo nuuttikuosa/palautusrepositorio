@@ -1,1 +1,2 @@
 Nyt tehdään viikon 7 git tehtävät
+Muutos tähän vifeen
